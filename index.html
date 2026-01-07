@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dice Roller - Crit & Fail Edition</title>
+    <title>Ultimate Dice Roller</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -17,69 +17,71 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
         
-        body { background-color: var(--bg); color: var(--text-main); display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; }
+        body { background-color: var(--bg); color: var(--text-main); display: flex; justify-content: center; padding: 1rem; min-height: 100vh; }
 
         .app-container {
             width: 100%; max-width: 500px; background: var(--surface); border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
 
-        header { padding: 1.5rem; border-bottom: 1px solid var(--border); text-align: center; background: #fafafa; }
-        h1 { font-size: 1.5rem; }
+        header { padding: 1.2rem; border-bottom: 1px solid var(--border); text-align: center; background: #fafafa; }
+        h1 { font-size: 1.3rem; }
 
-        .dice-grid { padding: 1.5rem; display: grid; gap: 1rem; }
+        .dice-grid { padding: 1rem; display: grid; gap: 0.8rem; }
         .die-row {
             display: flex; align-items: center; justify-content: space-between;
-            background: #fff; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px;
+            background: #fff; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 12px;
+            transition: border-color 0.2s;
         }
-        .die-name { font-weight: 700; width: 50px; color: var(--primary); }
-        .counter-controls { display: flex; align-items: center; gap: 10px; }
+        .die-row:hover { border-color: var(--primary); }
+        .die-name { font-weight: 800; width: 50px; color: var(--primary); font-size: 1.1rem; }
+        .counter-controls { display: flex; align-items: center; gap: 12px; }
+        
         .qty-btn {
-            width: 32px; height: 32px; border: 1px solid var(--border); background: #f9fafb;
-            border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border: 1px solid var(--border); background: #f9fafb;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
-        .qty-display { font-weight: 600; width: 24px; text-align: center; }
+        .qty-btn:active { transform: scale(0.9); background: #eef2ff; }
+        .qty-display { font-weight: 700; width: 24px; text-align: center; font-size: 1.1rem; }
 
-        .actions { padding: 0 1.5rem 1.5rem; display: flex; gap: 1rem; }
+        .actions { padding: 0 1rem 1rem; display: flex; gap: 0.8rem; }
         .btn-main {
-            flex: 1; padding: 12px; background: var(--primary); color: white;
-            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            flex: 1; padding: 14px; background: var(--primary); color: white;
+            border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem;
         }
-        .btn-reset { background: white; color: var(--text-muted); border: 1px solid var(--border); padding: 0 1rem; }
+        .btn-reset { background: white; color: var(--text-muted); border: 1px solid var(--border); padding: 0 1.2rem; flex: 0; }
 
         .result-area {
             background: #111827; color: white; padding: 1.5rem; text-align: center;
-            min-height: 120px; display: flex; flex-direction: column; justify-content: center;
+            min-height: 130px; display: flex; flex-direction: column; justify-content: center;
         }
-        .result-total { font-size: 3rem; font-weight: 800; }
-        .result-details { font-size: 0.9rem; color: #9ca3af; margin-top: 5px; }
+        .result-total { font-size: 3.5rem; font-weight: 800; line-height: 1; }
+        .result-details { font-size: 0.85rem; color: #9ca3af; margin-top: 8px; font-family: monospace; }
 
-        .history-section { border-top: 1px solid var(--border); flex: 1; overflow-y: auto; max-height: 250px; background: #fafafa; }
-        .history-header { padding: 0.75rem 1.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: #f3f4f6; position: sticky; top: 0; }
-        .history-item { padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .h-time { font-size: 0.7rem; color: var(--text-muted); display: block; }
-        .h-total { font-weight: 700; color: var(--primary); }
+        .history-section { border-top: 1px solid var(--border); flex: 1; overflow-y: auto; max-height: 200px; background: #fafafa; }
+        .history-header { padding: 0.6rem 1rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: #f3f4f6; position: sticky; top: 0; text-transform: uppercase; }
+        .history-item { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .h-time { font-size: 0.7rem; color: var(--text-muted); }
+        .h-total { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
 
-        /* --- POPUP STYLES --- */
+        /* --- POPUPS --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 9999;
+            background: rgba(0,0,0,0.9); z-index: 9999;
             display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(8px); cursor: pointer;
+            backdrop-filter: blur(10px); cursor: pointer;
         }
-        .overlay.show { display: flex; animation: popIn 0.3s ease-out; }
-        .content { text-align: center; }
-        .crit-img { max-width: 90%; max-height: 60vh; border-radius: 15px; border: 5px solid white; }
-        
-        /* Specific colors for success/fail */
-        .success-border { border-color: #ffd700; box-shadow: 0 0 30px #ffd700; }
-        .fail-border { border-color: #ff4757; box-shadow: 0 0 30px #ff4757; }
-        
-        .pop-text { font-size: 2.5rem; font-weight: 900; margin-top: 1rem; text-transform: uppercase; font-family: Impact, sans-serif; letter-spacing: 2px; }
-        .success-text { color: #ffd700; }
-        .fail-text { color: #ff4757; }
+        .overlay.show { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .content { text-align: center; padding: 20px; }
+        .crit-img { max-width: 100%; max-height: 50vh; border-radius: 20px; border: 6px solid white; }
+        .success-border { border-color: #fbbf24; box-shadow: 0 0 40px rgba(251, 191, 36, 0.5); }
+        .fail-border { border-color: #ef4444; box-shadow: 0 0 40px rgba(239, 68, 68, 0.5); }
+        .pop-text { font-size: 2.8rem; font-weight: 900; margin-top: 1.5rem; text-transform: uppercase; font-family: Impact, sans-serif; }
+        .success-text { color: #fbbf24; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .fail-text { color: #ef4444; }
 
-        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
         .shake { animation: shake 0.4s both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -105,48 +107,60 @@
 </div>
 
 <div class="app-container">
-    <header><h1>Dice Roller</h1></header>
+    <header><h1>Dice Roller Pro</h1></header>
+    
     <div class="result-area" id="resultArea">
         <div class="result-total" id="displayTotal">-</div>
-        <div class="result-details" id="displayDetails">Select dice below</div>
+        <div class="result-details" id="displayDetails">Select your dice</div>
     </div>
-    <div class="dice-grid" id="diceGrid"></div>
+
+    <div class="dice-grid" id="diceGrid">
+        </div>
+
     <div class="actions">
         <button class="btn-main btn-reset" onclick="resetCounts()">Clear</button>
-        <button class="btn-main" onclick="rollAll()">Roll Dice</button>
+        <button class="btn-main" onclick="rollAll()">ROLL ALL</button>
     </div>
+
     <div class="history-section">
-        <div class="history-header">History</div>
+        <div class="history-header">Roll History</div>
         <ul class="history-list" id="historyList"></ul>
     </div>
 </div>
 
 <script>
+    // Added d8 and d12 to the array
     const diceTypes = [
         { id: 'd4', label: 'd4', sides: 4 },
         { id: 'd6', label: 'd6', sides: 6 },
+        { id: 'd8', label: 'd8', sides: 8 },
         { id: 'd10', label: 'd10', sides: 10 },
+        { id: 'd12', label: 'd12', sides: 12 },
         { id: 'd20', label: 'd20', sides: 20 },
         { id: 'd100', label: 'd100', sides: 100 }
     ];
 
-    let counts = { d4: 0, d6: 0, d10: 0, d20: 0, d100: 0 };
+    let counts = {};
+    diceTypes.forEach(d => counts[d.id] = 0);
+
     const grid = document.getElementById('diceGrid');
     const displayTotal = document.getElementById('displayTotal');
     const displayDetails = document.getElementById('displayDetails');
     const resultArea = document.getElementById('resultArea');
     const historyList = document.getElementById('historyList');
 
-    grid.innerHTML = diceTypes.map(die => `
-        <div class="die-row">
-            <span class="die-name">${die.label}</span>
-            <div class="counter-controls">
-                <button class="qty-btn" onclick="updateCount('${die.id}', -1)">-</button>
-                <span class="qty-display" id="qty-${die.id}">0</span>
-                <button class="qty-btn" onclick="updateCount('${die.id}', 1)">+</button>
+    function init() {
+        grid.innerHTML = diceTypes.map(die => `
+            <div class="die-row">
+                <span class="die-name">${die.label}</span>
+                <div class="counter-controls">
+                    <button class="qty-btn" onclick="updateCount('${die.id}', -1)">-</button>
+                    <span class="qty-display" id="qty-${die.id}">0</span>
+                    <button class="qty-btn" onclick="updateCount('${die.id}', 1)">+</button>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    }
 
     function updateCount(id, change) {
         counts[id] = Math.max(0, counts[id] + change);
@@ -154,15 +168,18 @@
     }
 
     function resetCounts() {
-        Object.keys(counts).forEach(key => counts[key] = 0);
-        diceTypes.forEach(die => document.getElementById(`qty-${die.id}`).textContent = '0');
+        Object.keys(counts).forEach(key => {
+            counts[key] = 0;
+            const el = document.getElementById(`qty-${key}`);
+            if(el) el.textContent = '0';
+        });
         displayTotal.textContent = '-';
-        displayDetails.textContent = 'Select dice below';
+        displayDetails.textContent = 'Select your dice';
     }
 
     function rollAll() {
-        const totalDice = Object.values(counts).reduce((a, b) => a + b, 0);
-        if (totalDice === 0) return;
+        const totalDiceCount = Object.values(counts).reduce((a, b) => a + b, 0);
+        if (totalDiceCount === 0) return;
 
         resultArea.classList.remove('shake');
         void resultArea.offsetWidth;
@@ -191,7 +208,6 @@
                         val = Math.floor(Math.random() * die.sides) + 1;
                     }
 
-                    // Check for Nat 1 or Nat 20 on d20s
                     if (die.id === 'd20') {
                         if (val === 20) hasNat20 = true;
                         if (val === 1) hasNat1 = true;
@@ -209,7 +225,6 @@
         displayDetails.innerHTML = details.join('<br>');
         addToHistory(grandTotal, summaryParts.join(', '));
 
-        // Trigger Popups (Success takes priority if both happen)
         if (hasNat20) {
             showPopup('successOverlay');
         } else if (hasNat1) {
@@ -220,16 +235,18 @@
     function showPopup(id) {
         const el = document.getElementById(id);
         el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 3500);
+        setTimeout(() => el.classList.remove('show'), 4000);
     }
 
     function addToHistory(total, summary) {
         const li = document.createElement('li');
         li.className = 'history-item';
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        li.innerHTML = `<div><span class="h-time">${time}</span><span>${summary}</span></div><div class="h-total">${total}</div>`;
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        li.innerHTML = `<div><span class="h-time">${time}</span><span style="font-size:0.85rem">${summary}</span></div><div class="h-total">${total}</div>`;
         historyList.insertBefore(li, historyList.firstChild);
     }
+
+    init();
 </script>
 </body>
 </html>
