@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Dice Roller</title>
+    <title>Dice & Coin Roller Pro</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -13,10 +13,11 @@
             --text-main: #1f2937;
             --text-muted: #6b7280;
             --border: #e5e7eb;
+            --gold: #fbbf24;
+            --silver: #9ca3af;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-        
         body { background-color: var(--bg); color: var(--text-main); display: flex; justify-content: center; padding: 1rem; min-height: 100vh; }
 
         .app-container {
@@ -25,33 +26,8 @@
         }
 
         header { padding: 1.2rem; border-bottom: 1px solid var(--border); text-align: center; background: #fafafa; }
-        h1 { font-size: 1.3rem; }
-
-        .dice-grid { padding: 1rem; display: grid; gap: 0.8rem; }
-        .die-row {
-            display: flex; align-items: center; justify-content: space-between;
-            background: #fff; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 12px;
-            transition: border-color 0.2s;
-        }
-        .die-row:hover { border-color: var(--primary); }
-        .die-name { font-weight: 800; width: 50px; color: var(--primary); font-size: 1.1rem; }
-        .counter-controls { display: flex; align-items: center; gap: 12px; }
         
-        .qty-btn {
-            width: 36px; height: 36px; border: 1px solid var(--border); background: #f9fafb;
-            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.2rem;
-            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
-        }
-        .qty-btn:active { transform: scale(0.9); background: #eef2ff; }
-        .qty-display { font-weight: 700; width: 24px; text-align: center; font-size: 1.1rem; }
-
-        .actions { padding: 0 1rem 1rem; display: flex; gap: 0.8rem; }
-        .btn-main {
-            flex: 1; padding: 14px; background: var(--primary); color: white;
-            border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem;
-        }
-        .btn-reset { background: white; color: var(--text-muted); border: 1px solid var(--border); padding: 0 1.2rem; flex: 0; }
-
+        /* --- Results Area --- */
         .result-area {
             background: #111827; color: white; padding: 1.5rem; text-align: center;
             min-height: 130px; display: flex; flex-direction: column; justify-content: center;
@@ -59,29 +35,70 @@
         .result-total { font-size: 3.5rem; font-weight: 800; line-height: 1; }
         .result-details { font-size: 0.85rem; color: #9ca3af; margin-top: 8px; font-family: monospace; }
 
-        .history-section { border-top: 1px solid var(--border); flex: 1; overflow-y: auto; max-height: 200px; background: #fafafa; }
-        .history-header { padding: 0.6rem 1rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: #f3f4f6; position: sticky; top: 0; text-transform: uppercase; }
-        .history-item { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .h-time { font-size: 0.7rem; color: var(--text-muted); }
-        .h-total { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+        /* --- Dice/Coin Grid --- */
+        .dice-grid { padding: 1rem; display: grid; gap: 0.8rem; }
+        .die-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 12px;
+        }
+        .die-name { font-weight: 800; width: 60px; color: var(--primary); font-size: 1.1rem; }
+        .counter-controls { display: flex; align-items: center; gap: 12px; }
+        .qty-btn {
+            width: 36px; height: 36px; border: 1px solid var(--border); background: #f9fafb;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .qty-display { font-weight: 700; width: 24px; text-align: center; }
 
-        /* --- POPUPS --- */
+        .actions { padding: 0 1rem 1rem; display: flex; gap: 0.8rem; }
+        .btn-main {
+            flex: 1; padding: 14px; background: var(--primary); color: white;
+            border: none; border-radius: 10px; font-weight: 700; cursor: pointer;
+        }
+        .btn-reset { background: white; color: var(--text-muted); border: 1px solid var(--border); padding: 0 1.2rem; flex: 0; }
+
+        /* --- History --- */
+        .history-section { border-top: 1px solid var(--border); flex: 1; overflow-y: auto; max-height: 200px; background: #fafafa; }
+        .history-header { padding: 0.6rem 1rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: #f3f4f6; position: sticky; top: 0; }
+        .history-item { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+        /* --- COIN ANIMATION OVERLAY --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 9999;
             display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(10px); cursor: pointer;
+            backdrop-filter: blur(10px);
         }
-        .overlay.show { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .content { text-align: center; padding: 20px; }
-        .crit-img { max-width: 100%; max-height: 50vh; border-radius: 20px; border: 6px solid white; }
-        .success-border { border-color: #fbbf24; box-shadow: 0 0 40px rgba(251, 191, 36, 0.5); }
-        .fail-border { border-color: #ef4444; box-shadow: 0 0 40px rgba(239, 68, 68, 0.5); }
-        .pop-text { font-size: 2.8rem; font-weight: 900; margin-top: 1.5rem; text-transform: uppercase; font-family: Impact, sans-serif; }
-        .success-text { color: #fbbf24; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .fail-text { color: #ef4444; }
+        .overlay.show { display: flex; }
 
-        @keyframes popIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        .coin {
+            width: 150px; height: 150px;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        .coin div {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 4rem; font-weight: bold; border: 8px solid #d4af37;
+        }
+        .heads { background: var(--gold); color: #78350f; }
+        .tails { background: var(--silver); color: #374151; transform: rotateY(180deg); border-color: #4b5563 !important; }
+
+        /* Coin Flip Animation */
+        .animate-coin { animation: flip 1.5s ease-out forwards; }
+        @keyframes flip {
+            0% { transform: rotateY(0); }
+            100% { transform: rotateY(1800deg); } /* Many spins */
+        }
+
+        /* --- D20 POPUPS --- */
+        .crit-content { text-align: center; }
+        .crit-img { max-width: 90%; max-height: 50vh; border-radius: 20px; border: 6px solid white; }
+        .pop-text { font-size: 2.5rem; font-weight: 900; margin-top: 1rem; font-family: Impact, sans-serif; }
+
         .shake { animation: shake 0.4s both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -92,45 +109,51 @@
 </head>
 <body>
 
+<div class="overlay" id="coinOverlay">
+    <div class="coin" id="coinVisual">
+        <div class="heads">H</div>
+        <div class="tails">T</div>
+    </div>
+</div>
+
 <div class="overlay" id="successOverlay" onclick="this.classList.remove('show')">
-    <div class="content">
-        <img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyZGhiOXQ2cGgyODh0c2YyMDM4ZnJzY3BiMjd6NzA3OWh6ZnYzbTJoMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IGUkioSCTYOihYEtVX/giphy.gif" class="crit-img success-border">
-        <div class="pop-text success-text">NATURAL 20!</div>
+    <div class="content crit-content">
+        <img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyZGhiOXQ2cGgyODh0c2YyMDM4ZnJzY3BiMjd6NzA3OWh6ZnYzbTJoMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IGUkioSCTYOihYEtVX/giphy.gif" class="crit-img" style="border-color:#fbbf24">
+        <div class="pop-text" style="color:#fbbf24">NATURAL 20!</div>
     </div>
 </div>
 
 <div class="overlay" id="failOverlay" onclick="this.classList.remove('show')">
-    <div class="content">
-        <img src="https://media0.giphy.com/media/v1.Y2lkPTZjMDliOTUyMGp6YXRhaXNvcmxlcGo4bTdwMDlobmQzZHdqYmlyNzFyYzFycDFxcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2IgDbiP5bhdDLKHhu/giphy.gif" class="crit-img fail-border">
-        <div class="pop-text fail-text">CRITICAL FAIL!</div>
+    <div class="content crit-content">
+        <img src="https://media0.giphy.com/media/v1.Y2lkPTZjMDliOTUyMGp6YXRhaXNvcmxlcGo4bTdwMDlobmQzZHdqYmlyNzFyYzFycDFxcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2IgDbiP5bhdDLKHhu/giphy.gif" class="crit-img" style="border-color:#ef4444">
+        <div class="pop-text" style="color:#ef4444">CRITICAL FAIL!</div>
     </div>
 </div>
 
 <div class="app-container">
-    <header><h1>Dice Roller Pro</h1></header>
+    <header><h1>Dice & Coin Roller</h1></header>
     
     <div class="result-area" id="resultArea">
         <div class="result-total" id="displayTotal">-</div>
-        <div class="result-details" id="displayDetails">Select your dice</div>
+        <div class="result-details" id="displayDetails">Select dice or coins</div>
     </div>
 
-    <div class="dice-grid" id="diceGrid">
-        </div>
+    <div class="dice-grid" id="diceGrid"></div>
 
     <div class="actions">
         <button class="btn-main btn-reset" onclick="resetCounts()">Clear</button>
-        <button class="btn-main" onclick="rollAll()">ROLL ALL</button>
+        <button class="btn-main" onclick="rollAll()">ROLL</button>
     </div>
 
     <div class="history-section">
-        <div class="history-header">Roll History</div>
+        <div class="history-header">History</div>
         <ul class="history-list" id="historyList"></ul>
     </div>
 </div>
 
 <script>
-    // Added d8 and d12 to the array
     const diceTypes = [
+        { id: 'coin', label: 'Coin', sides: 2 },
         { id: 'd4', label: 'd4', sides: 4 },
         { id: 'd6', label: 'd6', sides: 6 },
         { id: 'd8', label: 'd8', sides: 8 },
@@ -148,6 +171,8 @@
     const displayDetails = document.getElementById('displayDetails');
     const resultArea = document.getElementById('resultArea');
     const historyList = document.getElementById('historyList');
+    const coinOverlay = document.getElementById('coinOverlay');
+    const coinVisual = document.getElementById('coinVisual');
 
     function init() {
         grid.innerHTML = diceTypes.map(die => `
@@ -170,22 +195,40 @@
     function resetCounts() {
         Object.keys(counts).forEach(key => {
             counts[key] = 0;
-            const el = document.getElementById(`qty-${key}`);
-            if(el) el.textContent = '0';
+            document.getElementById(`qty-${key}`).textContent = '0';
         });
         displayTotal.textContent = '-';
-        displayDetails.textContent = 'Select your dice';
+        displayDetails.textContent = 'Select dice or coins';
     }
 
     function rollAll() {
-        const totalDiceCount = Object.values(counts).reduce((a, b) => a + b, 0);
-        if (totalDiceCount === 0) return;
+        const totalItems = Object.values(counts).reduce((a, b) => a + b, 0);
+        if (totalItems === 0) return;
 
+        // If a coin is involved, show the animation first
+        if (counts['coin'] > 0) {
+            handleCoinAnimation();
+        } else {
+            triggerRollPhysics();
+        }
+    }
+
+    function handleCoinAnimation() {
+        coinOverlay.classList.add('show');
+        coinVisual.classList.add('animate-coin');
+        
+        setTimeout(() => {
+            coinOverlay.classList.remove('show');
+            coinVisual.classList.remove('animate-coin');
+            triggerRollPhysics();
+        }, 1500);
+    }
+
+    function triggerRollPhysics() {
         resultArea.classList.remove('shake');
         void resultArea.offsetWidth;
         resultArea.classList.add('shake');
         displayTotal.textContent = '...';
-
         setTimeout(performRoll, 300);
     }
 
@@ -213,7 +256,12 @@
                         if (val === 1) hasNat1 = true;
                     }
 
-                    rolls.push(val);
+                    // Display adjustment for Coin
+                    if (die.id === 'coin') {
+                        rolls.push(val === 2 ? 'Heads' : 'Tails');
+                    } else {
+                        rolls.push(val);
+                    }
                     grandTotal += val;
                 }
                 details.push(`${count}${die.label}: [${rolls.join(', ')}]`);
@@ -225,24 +273,20 @@
         displayDetails.innerHTML = details.join('<br>');
         addToHistory(grandTotal, summaryParts.join(', '));
 
-        if (hasNat20) {
-            showPopup('successOverlay');
-        } else if (hasNat1) {
-            showPopup('failOverlay');
-        }
+        if (hasNat20) showPopup('successOverlay');
+        else if (hasNat1) showPopup('failOverlay');
     }
 
     function showPopup(id) {
-        const el = document.getElementById(id);
-        el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 4000);
+        document.getElementById(id).classList.add('show');
+        setTimeout(() => document.getElementById(id).classList.remove('show'), 3500);
     }
 
     function addToHistory(total, summary) {
         const li = document.createElement('li');
         li.className = 'history-item';
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        li.innerHTML = `<div><span class="h-time">${time}</span><span style="font-size:0.85rem">${summary}</span></div><div class="h-total">${total}</div>`;
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        li.innerHTML = `<div><span style="font-size:0.7rem; color:var(--text-muted)">${time}</span><br><span>${summary}</span></div><div style="font-weight:800; color:var(--primary)">${total}</div>`;
         historyList.insertBefore(li, historyList.firstChild);
     }
 
